@@ -2,7 +2,7 @@ import pygame
 from enum import Enum
 
 class NodeColors(Enum):
-    text = pygame.Color("black")
+    text = pygame.Color("white")
     normal = pygame.Color("white")
     path = pygame.Color("magenta")
     start = pygame.Color("blue")

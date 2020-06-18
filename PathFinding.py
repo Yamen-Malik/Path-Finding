@@ -1,16 +1,18 @@
 import pygame, sys, time, node, pathfinder, colors
 
+algorithm = pathfinder.UpdateSurrounding	#The algorithm that we are going to user
 default_screen_size = (750, 700)
 rect_size = [25, 25]  			# The rectangle size *In pixels
 margin = 1						# Margin between each node in Pixels
 columns, rows = 0, 0  # Number of columns & rows you want to generate * it will be calculated later
 node_list = []  					# List to contain the all the generated nodes
-default_start_grid_pos, default_end_grid_pos = (2,2), (10,5)	# X and Y value to the start & end nodes (relitive to the grid not thee screen)
+weighted_node_cost = 4
+weight_image_path = r"D:\Yamen\Programming folder\Python\Path-Finding\weight.png"
+default_start_grid_pos, default_end_grid_pos = (5,5), (15,5)	# X and Y value to the start & end nodes (relitive to the grid not thee screen)
 start_node, end_node = None, None
-# //obstacles = {(6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7), (6,8), (6,9), (6,10), (6,11), (6,12), (6,13), (6,14), (7,14), (8,14), (9,14), (10,14), (11,14), (12,14), (13,14), (14,14), (15,14), (16,14)}
 delay_time = 0			# The time you want to delay between each node update *In Seconds (in other words: speed)
 info_panel_size = (500, 180)
-info_text = " Keyboard bindings: \n Place node mode \n Set start-node: s \t Set end-node: e \t Set obstacle-node: o \n Remove obstacle-node: u \n Reset: r \t Run: return/enter \t Zoom in\\out : mouse scroll\n\n*Click left\\right mouse button on a node after choosing \n a place node to change it"
+info_text = " Keyboard bindings: \n Place node mode: \n Start-node: s \t End-node: e \t Obstacle-node: o \n Remove obstacle-node: u \n Reset: r \t Run: return/enter \t Zoom in\\out : mouse scroll\n\n*Click left\\right mouse button on a node after choosing \n a place node to change it"
 
 #Colors
 background_color = pygame.Color("gray")
@@ -135,23 +137,19 @@ def SetStart(node):
 	"""
 		Sets the start node the given node
 	"""
-	global start_node, default_start_grid_pos
-	if not start_node == None:
-		start_node.ChangeColor(colors.NodeColors.normal.value)
-		start_node.distance_from_start = float("inf")
+	global start_node
+	if start_node != None:
+		start_node.Reset()
 	node.ChangeColor(colors.NodeColors.start.value)
-	node.is_obstacle = False
-	node.distance_from_start = 0
 	start_node = node
 def SetEnd(node):
 	"""
 		Sets the end node the given node
 	"""
-	global end_node, default_end_grid_pos
-	if not end_node == None:
-		end_node.ChangeColor(colors.NodeColors.normal.value)
+	global end_node
+	if end_node != None:
+		end_node.Reset()
 	node.ChangeColor(colors.NodeColors.end.value)
-	node.is_obstacle = False
 	end_node = node
 def SetObstacle(node):
 	"""
@@ -168,30 +166,36 @@ def ModifyNode(position, type):
 	if x >= columns or y >= rows:
 		return
 	node = node_list[x][y]
-	if set_mode == "start" and not node == end_node:
-		SetStart(node)
-	elif set_mode == "end" and not node == start_node:
-		SetEnd(node)
-	elif set_mode == "obstacle" and not node in (start_node, end_node):
-		SetObstacle(node)
-	elif set_mode == "remove" and node.is_obstacle:
-		node.ChangeColor(colors.NodeColors.normal.value)
-		node.is_obstacle = False
-	else:
+	if node in (start_node, end_node):
 		return
-	if position[0] <= info_panel_size[0] and position[1] >= screen.get_height() - info_panel_size[1]:
-		DrawScreen()
+	if set_mode == "start":
+		SetStart(node)
+	elif set_mode == "end":
+		SetEnd(node)
+	elif set_mode == "obstacle":
+		SetObstacle(node)
+	elif set_mode == "weighted":
+		node.is_obstacle = False
+		node.SetToWeighted(weighted_node_cost)
+	elif set_mode == "remove":
+		node.Reset()
 def Reset(remove_obstacles = False):
+	"""
+		Rsets all the nodes to normal nodes except the start and end nodes
+	"""
+	screen.fill(background_color)
 	for x in node_list:
 		for node in x:
-			if node.is_obstacle:
+			if node.is_obstacle or node.is_weighted:
 				if remove_obstacles:
-					node.is_obstacle = False
-					node.ChangeColor(colors.NodeColors.normal.value)
+					node.Reset()
+				elif node.is_weighted:
+					node.distance_from_start = float("inf")
+					node.total_distance = float("inf")
+				node.Draw()
 				continue
 			elif not node in [start_node, end_node]:
-				node.distance_from_start = float("inf")
-				node.ChangeColor(colors.NodeColors.normal.value)
+				node.Reset()
 			else:
 				node.Draw()
 def FillEmptyScreen():
@@ -214,8 +218,12 @@ def FillEmptyScreen():
 			column.append(CreateNode(node_list.index(column), rows + y))
 	rows += needed_rows
 def OnCheking(node):
+	if node in (start_node, end_node):
+		return
 	node.ChangeColor(colors.NodeColors.cheking.value)
 def OnVisited(node):
+	if node in (start_node, end_node):
+		return
 	node.ChangeColor(colors.NodeColors.visited.value)
 def Flip():
 	pygame.display.flip()
@@ -231,16 +239,15 @@ def AddNewNodes(new_columns, new_rows):
 	rows += new_rows
 
 
-def DrawScreen():
+def DrawNodes():
 	"""
-		Draws all app objects
+		Draws all the nodes
 	"""
 	screen.fill(background_color)
 	for x in node_list:
 		for node in x:
 			node.position = CalculateNodePosition(node.column, node.row)
 			node.Draw()
-	DrawInfoPanel()
 def DrawInfoPanel():
 	# info_panel = pygame.Surface(info_panel_size)
 	# info_panel.set_alpha(100)
@@ -248,7 +255,7 @@ def DrawInfoPanel():
 	i= 0
 	font = pygame.font.SysFont("arial", 20)
 	for line in info_text.split("\n"):
-		t = font.render(line.replace("\t", "    ").replace("\n", ""), True, pygame.Color("black"))
+		t = font.render(line.replace("\t", "    ").replace("\n", ""), True, pygame.Color("green"))
 		# info_panel.blit(t, (0, 20 * i))
 		screen.blit(t, (0, screen.get_height() - info_panel_size[1] + 20 *i))
 		i += 1 
@@ -257,7 +264,13 @@ def DrawInfoPanel():
 	#// info_panel.blit(text, (0,0))
 	# screen.blit(info_panel, (0, screen.get_height()- info_panel_size[1]))
 def FindPath():
-	for node in pathfinder.UpdateSurrounding(node_list, start_node, end_node, delay_time):
+	# path = pathfinder.UpdateSurrounding(node_list, start_node, end_node, delay_time)
+	path = algorithm(node_list, start_node, end_node, delay_time)
+	if path == None:
+		return
+	for node in path:
+		if node in (start_node, end_node):
+			continue
 		node.ChangeColor(colors.NodeColors.path.value)
 def Zoom(multiplier):
 	"""
@@ -268,7 +281,7 @@ def Zoom(multiplier):
 	rect_size[0] += multiplier
 	rect_size[1] += multiplier
 	FillEmptyScreen()
-	DrawScreen()
+	DrawNodes()
 def ZoomIn():
 	if rect_size[0] < 396 and rect_size[1] < 296:
 		Zoom(1)
@@ -277,12 +290,12 @@ def ZoomOut():
 		Zoom(-1)
 
 pygame.init()
-font = pygame.font.SysFont("Arial", 12)
-node_generator = node.NodeGenerator(rect_size, font)
+font = pygame.font.SysFont("arial", 12)
+node_generator = node.NodeGenerator(rect_size, font, weight_image_path)
 screen = pygame.display.set_mode(default_screen_size, pygame.RESIZABLE)
 
 FillEmptyScreen()
-DrawScreen()
+DrawNodes()
 pathfinder.on_checking_event.append(OnCheking)
 pathfinder.on_visited_event.append(OnVisited)
 
@@ -302,7 +315,7 @@ while True:
 				break
 			screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
 			FillEmptyScreen()
-			DrawScreen()
+			DrawNodes()
 		elif event.type == pygame.MOUSEBUTTONDOWN:
 			if event.button == 5:
 				ZoomOut()
@@ -321,6 +334,8 @@ while True:
 				set_mode = "end"
 			elif event.key == pygame.K_o:
 				set_mode = "obstacle"
+			elif event.key == pygame.K_w:
+				set_mode = "weighted"
 			elif event.key == pygame.K_u:
 				set_mode = "remove"
 			elif event.key == pygame.K_r:
@@ -328,7 +343,7 @@ while True:
 			elif event.key == pygame.K_RETURN:
 				Reset()
 				FindPath()
-		#Change nodes
+		#Mofify nodes
 		elif (mouse_down and event.type == pygame.MOUSEMOTION):
 			ModifyNode(pygame.mouse.get_pos(), set_mode)
 	node_generator.UpdateRectSize(rect_size)

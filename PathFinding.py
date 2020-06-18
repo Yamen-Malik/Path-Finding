@@ -340,6 +340,10 @@ while True:
 				set_mode = "remove"
 			elif event.key == pygame.K_r:
 				Reset(True)
+			elif event.key == pygame.K_1:
+				algorithm = pathfinder.UpdateSurrounding
+			elif event.key == pygame.K_2:
+				algorithm = pathfinder.AStar
 			elif event.key == pygame.K_RETURN:
 				Reset()
 				FindPath()

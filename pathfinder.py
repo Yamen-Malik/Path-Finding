@@ -15,14 +15,14 @@ def UpdateSurrounding(node_list, start_node, end_node, delay_time, nodes_to_scan
 		found_path = False
 		nodes_to_scan = [start_node]
 
-	total_surroundings = set()
+	total_surroundings = []
 	time.sleep(delay_time)
 	for current_node in nodes_to_scan:
 		surroundings = GetSurroundingNodes(node_list, current_node)
-		to_remove = set()  # Stores the nodes that shouldn't get updated and delete them after the loop (like obstacles, already updated nodes, etc..)
+		to_remove = []  # Stores the nodes that shouldn't get updated and delete them after the loop (like obstacles, already updated nodes, etc..)
 		for surrounding_node in surroundings:
 			if surrounding_node == start_node or surrounding_node.is_obstacle:
-				to_remove.add(surrounding_node)
+				to_remove.append(surrounding_node)
 				continue
 			elif surrounding_node == end_node:
 				found_path = True
@@ -32,14 +32,14 @@ def UpdateSurrounding(node_list, start_node, end_node, delay_time, nodes_to_scan
 				CallEvent(on_checking_event, surrounding_node)
 				surrounding_node.previous_node = current_node
 			else:
-				to_remove.add(surrounding_node)
-		surroundings.difference_update(to_remove)
-		total_surroundings.update(surroundings)
+				to_remove.append(surrounding_node)
+		surroundings = filter(lambda i: not i in to_remove, surroundings)
+		total_surroundings += surroundings
 	for node in nodes_to_scan:
 		if node != start_node:
 			CallEvent(on_visited_event, node)
 	CallEvent(on_surrounding_check_event, None)
-	if not total_surroundings == set():
+	if not total_surroundings == []:
 		return UpdateSurrounding(node_list, start_node, end_node, delay_time, total_surroundings)
 	elif not found_path:
 		print("couldn't find a path")
@@ -101,12 +101,12 @@ def GetSurroundingNodes(node_list, node):
 	"""
 		Returns all surrounding nodes without going out of node_list range
 	"""
-	surroundings = {(node.column+1, node.row), (node.column-1, node.row),(node.column, node.row+1), (node.column, node.row-1)}
+	surroundings = [(node.column+1, node.row), (node.column-1, node.row),(node.column, node.row+1), (node.column, node.row-1)]
 	if diagonal:
-		surroundings.update({(node.column+1, node.row+1), (node.column+1, node.row-1), (node.column-1, node.row-1), (node.column-1, node.row+1)})
+		surroundings += [(node.column+1, node.row+1), (node.column+1, node.row-1), (node.column-1, node.row-1), (node.column-1, node.row+1)]
 	
 	#Here we filter the surroundings to make sure that we don't go out of the list range
-	return set(map(lambda x: node_list[x[0]][x[1]],
+	return list(map(lambda x: node_list[x[0]][x[1]],
                         filter(lambda x: x[0] >= 0 and x[0] < len(node_list) and x[1] >= 0 and x[1] < len(node_list[0]), surroundings)))
 def GetDistanceFormEnd(node, end_node):
 	return abs(node.column - end_node.column) + abs(node.row - end_node.row)

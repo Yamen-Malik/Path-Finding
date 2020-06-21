@@ -2,7 +2,6 @@ import pygame
 from enum import Enum
 
 class NodeColors(Enum):
-    text = pygame.Color("white")
     normal = pygame.Color("white")
     path = pygame.Color("magenta")
     start = pygame.Color("blue")
@@ -10,3 +9,6 @@ class NodeColors(Enum):
     obstacle = pygame.Color("black")
     visited = pygame.Color("purple")
     cheking = pygame.Color("cyan")
+class General(Enum):
+    text = pygame.Color("black")
+    info_text = pygame.Color("green")

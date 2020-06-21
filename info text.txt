@@ -1,0 +1,8 @@
+                    Keyboard bindings 
+  Place node mode: 
+    Start-node: s    End-node: e     Obstacle-node: o 
+    Remove obstacle-node: u 
+    Reset: r     Run: return/enter   Zoom in\\out : mouse scroll
+    
+*Click left\\right mouse button on a node after choosing 
+ a place node to change it

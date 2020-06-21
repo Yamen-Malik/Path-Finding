@@ -2,84 +2,90 @@ import time
 found_path = False
 diagonal = False
 on_checking_event = []
-on_visited_event = []
+on_finished_event = []
 on_surrounding_check_event = []
-def UpdateSurrounding(node_list, start_node, end_node, delay_time, nodes_to_scan = None):
-	"""
-		Takes a list of nodes and update the surrounding nodes values\n
-		Get Surrounding nodes, update them, store them an a list, call the function again for the list
-	"""
+def Dijkstra(node_list, start_node, end_node):
 	start_node.distance_from_start = 0
-	global found_path
-	if nodes_to_scan == None:
-		found_path = False
-		nodes_to_scan = [start_node]
-
-	total_surroundings = []
-	time.sleep(delay_time)
-	for current_node in nodes_to_scan:
-		surroundings = GetSurroundingNodes(node_list, current_node)
-		to_remove = []  # Stores the nodes that shouldn't get updated and delete them after the loop (like obstacles, already updated nodes, etc..)
-		for surrounding_node in surroundings:
-			if surrounding_node == start_node or surrounding_node.is_obstacle:
-				to_remove.append(surrounding_node)
-				continue
-			elif surrounding_node == end_node:
-				found_path = True
+	current_node = start_node   # this list keeps track of the nodes we should check in order (lower distance from start to the higher)
+	to_check = []
+	while True:
+		for surrounding_node in GetSurroundingNodes(node_list, current_node):
+			if surrounding_node == end_node:
 				return TrackBack(current_node, start_node)
-			elif current_node.distance_from_start + surrounding_node.cost < surrounding_node.distance_from_start:
-				surrounding_node.distance_from_start = current_node.distance_from_start+surrounding_node.cost
-				CallEvent(on_checking_event, surrounding_node)
+			measured_distance = current_node.distance_from_start + surrounding_node.cost
+			if surrounding_node != start_node and not surrounding_node.is_obstacle and surrounding_node.distance_from_start > measured_distance: 
+				surrounding_node.distance_from_start = measured_distance
 				surrounding_node.previous_node = current_node
-			else:
-				to_remove.append(surrounding_node)
-		surroundings = filter(lambda i: not i in to_remove, surroundings)
-		total_surroundings += surroundings
-	for node in nodes_to_scan:
-		if node != start_node:
-			CallEvent(on_visited_event, node)
-	CallEvent(on_surrounding_check_event, None)
-	if not total_surroundings == []:
-		return UpdateSurrounding(node_list, start_node, end_node, delay_time, total_surroundings)
-	elif not found_path:
-		print("couldn't find a path")
+				for i in range(len(to_check)):
+					if to_check[i].distance_from_start > surrounding_node.distance_from_start:
+						to_check.insert(i, surrounding_node)
+						break
+				if surrounding_node not in to_check:
+					to_check.append(surrounding_node)
+				CallEvent(on_checking_event, surrounding_node)
+		CallEvent(on_finished_event, current_node)
+		CallEvent(on_surrounding_check_event, to_check)
+		if to_check == []:
+			return
+		current_node = to_check.pop(0)
 
-
-def AStar(node_list, start_node, end_node, delay_time):
+def AStar(node_list, start_node, end_node):
 	start_node.distance_from_start = 0
-	start_node.total_distance = GetDistanceFormEnd(start_node, end_node)
 	current_node = start_node
-	checked_nodes = []
+	to_check = []   # this list keeps track of the nodes we should check in order (lower total distance to the higher)
 	finished_nodes = set()
 	while True:
-		time.sleep(delay_time)
+		# time.sleep(delay_time)
 		for surrounding_node in GetSurroundingNodes(node_list, current_node):
 			if surrounding_node == end_node:
 				end_node.previous_node = current_node
 				return TrackBack(end_node, start_node)
 			if (not surrounding_node.is_obstacle) and surrounding_node.distance_from_start > (current_node.distance_from_start + surrounding_node.cost):
 				surrounding_node.distance_from_start = current_node.distance_from_start +surrounding_node.cost
-				surrounding_node.total_distance = surrounding_node.distance_from_start + GetDistanceFormEnd(surrounding_node, end_node)
+				surrounding_node.total_distance = surrounding_node.distance_from_start + GetNodeDistance(surrounding_node, end_node)
 				surrounding_node.previous_node = current_node
-				inserted = False
-				# print(surrounding_node.distance_from_start)
-				if surrounding_node not in checked_nodes and surrounding_node not in finished_nodes:
-					for i in range(len(checked_nodes)):
-						if checked_nodes[i].total_distance >= surrounding_node.total_distance :
-							checked_nodes.insert(i, surrounding_node)
-							inserted = True
+				if surrounding_node not in to_check and surrounding_node not in finished_nodes:
+					#Here we are inserting the node to out list (to_check) in the right place by doing this we won't need to sort the list
+					# Beacuse our insertation isn't random
+					for i in range(len(to_check)):
+						if to_check[i].total_distance >= surrounding_node.total_distance :
+							to_check.insert(i, surrounding_node)
 							break
-					if not inserted:
-						checked_nodes.insert(len(checked_nodes), surrounding_node)
+					if surrounding_node not in to_check:
+						to_check.append(surrounding_node)
 					CallEvent(on_checking_event, surrounding_node)
-		CallEvent(on_visited_event, current_node)
+					
+		CallEvent(on_finished_event, current_node)
+		CallEvent(on_surrounding_check_event, to_check)
 
 		finished_nodes.add(current_node)
-		if len(checked_nodes) == 0:
+		if to_check == []:
 			return
-		current_node = checked_nodes.pop(0)
-		CallEvent(on_surrounding_check_event, None)
+		current_node = to_check.pop(0)
 
+def GreedyBST(node_list, start_node, end_node):
+	start_node.distance_from_start =  0
+	current_node = start_node
+	to_check = []  # this list keeps track of the nodes we should check in order (lower distance from end to the higher)
+	while True:
+		for surrounding_node in GetSurroundingNodes(node_list, current_node):
+			if surrounding_node == end_node:
+				return TrackBack(current_node, start_node)
+			if not surrounding_node.is_obstacle and surrounding_node.distance_from_end == float("inf"):
+				surrounding_node.distance_from_end = GetNodeDistance(surrounding_node, end_node)
+				surrounding_node.previous_node = current_node
+				CallEvent(on_checking_event, surrounding_node)
+				for i in range(len(to_check)):
+					if to_check[i].distance_from_end > surrounding_node.distance_from_end:
+						to_check.insert(i, surrounding_node)
+						break
+				if surrounding_node not in to_check:
+					to_check.append(surrounding_node)
+		CallEvent(on_finished_event, current_node)
+		CallEvent(on_surrounding_check_event, to_check)
+		if to_check == []:
+			return
+		current_node = to_check.pop(0)
 
 def TrackBack(node, start_node):
 	"""
@@ -96,7 +102,6 @@ def TrackBack(node, start_node):
 			return track_list[::-1]
 		else:
 			track_list.append(last_node)
-
 def GetSurroundingNodes(node_list, node):
 	"""
 		Returns all surrounding nodes without going out of node_list range
@@ -108,11 +113,26 @@ def GetSurroundingNodes(node_list, node):
 	#Here we filter the surroundings to make sure that we don't go out of the list range
 	return list(map(lambda x: node_list[x[0]][x[1]],
                         filter(lambda x: x[0] >= 0 and x[0] < len(node_list) and x[1] >= 0 and x[1] < len(node_list[0]), surroundings)))
-def GetDistanceFormEnd(node, end_node):
-	return abs(node.column - end_node.column) + abs(node.row - end_node.row)
-def CallEvent(event, paramater):
+def GetNodeDistance(node, target):
+	"""
+		Returns the distance from the given node the the given target
+	"""
+	return abs(node.column - target.column) + abs(node.row - target.row)
+def CallEvent(event, parameter = None):
+	"""
+		Call all the given event subscribers and pass the given parameter to them
+			parameter: None = no parameters (Default = None)
+	"""
 	for function in event:
-		if paramater == None:
+		if parameter == None:
 			function()
 		else:
-			function(paramater)
+			function(parameter)
+def GetIsWeighted(algorithm):
+	"""
+		Returns whether the algorithm is Weighted or not
+	"""
+	if algorithm in [Dijkstra, AStar]:
+		return True
+	else:
+		return False

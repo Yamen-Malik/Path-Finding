@@ -10,5 +10,5 @@ class NodeColors(Enum):
     visited = pygame.Color("purple")
     cheking = pygame.Color("cyan")
 class General(Enum):
-    text = pygame.Color("black")
+    text = pygame.Color("white")
     info_text = pygame.Color("green")

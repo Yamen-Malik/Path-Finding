@@ -57,13 +57,12 @@ def AStar(node_list, start_node, end_node):
 					
 		CallEvent(on_finished_event, current_node)
 		CallEvent(on_surrounding_check_event, to_check)
-
 		finished_nodes.add(current_node)
 		if to_check == []:
 			return
 		current_node = to_check.pop(0)
 
-def GreedyBST(node_list, start_node, end_node):
+def GreedyBFS(node_list, start_node, end_node):
 	start_node.distance_from_start =  0
 	current_node = start_node
 	to_check = []  # this list keeps track of the nodes we should check in order (lower distance from end to the higher)

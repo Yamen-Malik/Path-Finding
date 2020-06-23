@@ -1,8 +1,7 @@
-                    Keyboard bindings 
-  Place node mode: 
-    Start-node: s    End-node: e     Obstacle-node: o 
-    Remove obstacle-node: u 
-    Reset: r     Run: return/enter   Zoom in\\out : mouse scroll
+                      Keyboard bindings 
+  Draw mode:  Start-node = s    End-node = e     Obstacle-node: o 
+  Algorithms: Dijkstar: 1      A*: 2           Greedy Best-First Search : 3
+  Reset: r     Run: return/enter   Zoom in\\out : mouse scroll
     
-*Click left\\right mouse button on a node after choosing 
- a place node to change it
+*Click left mouse button on a node after choosing 
+ a place node to change it (use right click to remove nodes)

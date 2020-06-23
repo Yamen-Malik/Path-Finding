@@ -20,7 +20,7 @@ class NodeGenerator():
 
 	class Node:
 		def __init__(self, position, column, row, cost = 1, color = colors.NodeColors.normal.value):
-			self.grid_position = self.column, self.row = column, row
+			self.column, self.row = column, row
 			self.position = position								# Position in pixels
 			self.distance_from_start = float("inf")		# If this value = infinity that means it hasn't been updated yet
 			self.distance_from_end = float("inf")
@@ -86,13 +86,15 @@ class NodeGenerator():
 			self.Reset()
 			self.is_obstacle = True
 			self.ChangeColor(colors.NodeColors.obstacle.value)
+		def ResetDistances(self):
+			self.distance_from_start = float("inf")
+			self.distance_from_end = float("inf")
+			self.total_distance = float("inf")
 		def Reset(self):
 			"""
 				Resets the node to the default values
 			"""
-			self.distance_from_start = float("inf")
-			self.distance_from_end = float("inf")
-			self.total_distance = float("inf")
+			self.ResetDistances()
 			self.is_obstacle = False
 			self.is_weight = False
 			self.cost = 1

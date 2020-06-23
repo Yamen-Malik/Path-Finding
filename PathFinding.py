@@ -105,12 +105,12 @@ def Reset(remove_obstacles = False, remove_weight = False):
 				if remove_weight:
 					node.Reset()
 				else:
-					node.distance_from_start = float("inf")
-					node.total_distance = float("inf")
+					node.ResetDistances()
 					node.ChangeColor(colors.NodeColors.normal.value)
 			elif node not in [start_node, end_node]:
 				node.Reset()
 			else:
+				node.ResetDistances()
 				node.Draw()
 def FillEmptyScreen():
 	"""
@@ -141,7 +141,6 @@ def FillEmptyScreen():
 	# 	for y in range(new_rows):
 	# 		column.append(CreateNode(node_list.index(column), rows + y))
 	# rows += new_rows
-
 def OnCheking(node):
 	if node in (start_node, end_node):
 		return
@@ -172,20 +171,11 @@ def DrawNodes():
 			node.position = CalculateNodePosition(node.column, node.row)
 			node.Draw()
 def DrawInfoPanel():
-	# info_panel = pygame.Surface(info_panel_size)
-	# info_panel.set_alpha(100)
-	# info_panel.fill((64,64,64))
 	i= 0
-	font = pygame.font.SysFont("arial", 20)
 	for line in info_text.split("\n"):
 		t = font.render(line.replace("\t", "    ").replace("\n", ""), True, colors.General.info_text.value)
-		# info_panel.blit(t, (0, 20 * i))
 		screen.blit(t, (0, screen.get_height() - info_panel_size[1] + 20 *i))
 		i += 1 
-	#// text = pygame.font.SysFont("arial", 20).render(, True, colors.NodeColors.text.value)
-	#// info_panel.blit(font.render("keyboard bindings:\n set start-node: s \t set end-node: e \t set obstacle-node: o \n remove obstacle-node: u \t reset: r \t run: return/enter", True, colors.NodeColors.text), (0, 0))
-	#// info_panel.blit(text, (0,0))
-	# screen.blit(info_panel, (0, screen.get_height()- info_panel_size[1]))
 def FindPath():
 	if not pathfinder.GetIsWeighted(algorithm):
 		Reset(False, True)
@@ -219,14 +209,14 @@ pygame.init()
 pygame.display.set_caption("Path finding Visualizer")
 screen = pygame.display.set_mode(default_screen_size, pygame.RESIZABLE)
 node_generator = node.NodeGenerator(screen, rect_size, weight_image_path)
-
+font = pygame.font.SysFont("arial", 20)
 FillEmptyScreen()
 DrawNodes()
 pathfinder.on_checking_event.append(OnCheking)
 pathfinder.on_finished_event.append(OnVisited)
-
 pathfinder.on_surrounding_check_event.append(Flip)
 
+#Set default start and end nodes
 SetStart(node_list[default_start_grid_pos[0]][default_start_grid_pos[1]])
 SetEnd(node_list[default_end_grid_pos[0]][default_end_grid_pos[1]])
 
@@ -274,26 +264,23 @@ while True:
 			elif event.key == pygame.K_PERIOD:
 				if delay_time < 100:
 					delay_time+= 1
-					print(delay_time)
 			elif event.key == pygame.K_COMMA:
 				if delay_time >= 0:
 					delay_time-=1
-					print(delay_time)
 			elif event.key == pygame.K_1:
 				algorithm = pathfinder.Dijkstra
 			elif event.key == pygame.K_2:
 				algorithm = pathfinder.AStar
 			elif event.key == pygame.K_3:
-				algorithm = pathfinder.GreedyBST
+				algorithm = pathfinder.GreedyBFS
 			elif event.key == pygame.K_RETURN:
 				FindPath()
-		#Mofify nodes
+		#Modify nodes
 		elif event.type == pygame.MOUSEMOTION:
 			if remove_mode:
 				ModifyNode(pygame.mouse.get_pos(), NodeTypes.Normal)
 			elif mouse_down:
 				ModifyNode(pygame.mouse.get_pos(), draw_mode)
-	# print(delay_time)
 	node_generator.UpdateRectSize(rect_size)
 	DrawInfoPanel()
 	pygame.display.flip()

@@ -28,7 +28,7 @@ The app contains 5 main node types to use:
 * Obstacle node (black)
 * Weight node   (Weight icon)
 
-###Algorithms  
+### Algorithms  
 I currently have 3 algorithms:
 * Dijkstra
 * A*
@@ -40,8 +40,7 @@ I currently have 3 algorithms:
 Controls
 --------
 ### Drawing nodes  
-After choosing the a node type to place, hold the left mouse button and hover over the nodes you want to change  
-Use Right mouse button to remove Obstacle and Weight nodes
+First you need to choose the node type that you to draw by using the following controls:
 
 |Node type|Keyboard key|
 |---------|------------|
@@ -50,12 +49,16 @@ Use Right mouse button to remove Obstacle and Weight nodes
 |Obstacle |     O      |
 | Weight  |     W      |
 
+
+After choosing the a node type, hold the left mouse button and hover over the nodes you want to replace  
+Use Right mouse button to remove Obstacle and Weight nodes
+
 ![Obstacle](https://user-images.githubusercontent.com/60931606/85296162-a2155080-b4a9-11ea-995f-2a32abc0a84e.gif)
 ![Drawing](https://user-images.githubusercontent.com/60931606/85296277-d0932b80-b4a9-11ea-9281-da5740aa237f.gif)
 
 
 ### Running the algorithm  
-Choose the algorithm you want to user then press Enter
+Choose the algorithm you want to use then press Enter
 
 |Algorithm|Keyboard key|
 |---------|------------|
@@ -64,14 +67,16 @@ Choose the algorithm you want to user then press Enter
 | Greedy  |     3      |
 
 ### Other Controls
-|  Function  |    Key     |
-|------------|------------|
-| Reset      |     R      |
-|Zoom in/out |Mouse scroll|
+|   Function    |    Key     |
+|---------------|------------|
+|Reset          |     R      |
+|Zoom in/out    |Mouse scroll|
+|Increase delay |    Dot     |
+|Dencrease delay|   Comma    |
 
 Features
 --------
 1. The ability to Draw nodes
-2. The ability to switch between the algorithm
+2. The ability to switch between three different algorithms
 3. Obstacle and Weight nodes
 4. Control the delay time/speed of the visualization

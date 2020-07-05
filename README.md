@@ -50,8 +50,10 @@ First you need to choose the node type that you to draw by using the following c
 | Weight  |     W      |
 
 
+
 After choosing the a node type, hold the left mouse button and hover over the nodes you want to replace  
 Use Right mouse button to remove Obstacle and Weight nodes
+
 
 ![Obstacle](https://user-images.githubusercontent.com/60931606/85296162-a2155080-b4a9-11ea-995f-2a32abc0a84e.gif)
 ![Drawing](https://user-images.githubusercontent.com/60931606/85296277-d0932b80-b4a9-11ea-9281-da5740aa237f.gif)

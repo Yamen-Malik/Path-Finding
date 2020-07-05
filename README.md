@@ -72,7 +72,6 @@ Choose the algorithm you want to user then press Enter
 Features
 --------
 1. The ability to Draw nodes
-2. The ability to switch beteen the algorithm
+2. The ability to switch between the algorithm
 3. Obstacle and Weight nodes
 4. Control the delay time/speed of the visualization
-5. Diagonal move

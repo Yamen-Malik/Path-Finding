@@ -1,34 +1,33 @@
 import pygame, sys, time, node, pathfinder, colors, os
-from enum import Enum
+from node import NodeTypes
 
 #Grid
 rect_size = [25, 25]  			# The rectangle size *In pixels
 columns, rows = 0, 0  # Number of columns & rows you want to generate * it will be calculated later
 margin = 1						# Margin between each node in Pixels
-
 node_list = []  					# List to contain the all the generated nodes
-#Default
+
+#Defaults
 default_screen_size = (750, 700)
 background_color = pygame.Color("gray")
 default_start_grid_pos, default_end_grid_pos = (5,5), (15,5)	# X and Y value to the start & end nodes (relitive to the grid not to the screen)
 weight_image_path = os.path.abspath("weight.png")
 weighted_node_cost = 4
-info_panel_size = (500, 180)
+info_panel_size = (500, 130)
+minimum_delay = 0.001
+maximum_delay = 0.5
 
 #Other
 algorithm = pathfinder.Dijkstra	#The algorithm that we are going to user
 start_node, end_node = None, None
-delay_time = 0			# The time you want to delay between each node update *In Seconds (in other words: speed)
-
-with open(os.path.abspath("info text.txt"), "r") as f:
+delay_time = minimum_delay			# The time you want to delay between each node update *In Seconds (in other words: speed)
+info_text = ""
+try:
+	f = open(os.path.abspath("info text.txt"), "r")
 	info_text = f.read()
+except:
+	print("\"info text.txt\" is unreachable")
 
-class NodeTypes(Enum):
-	Normal = 0
-	Start = 1
-	End = 2
-	Obstacle = 3
-	Weight = 4
 
 def CreateNode(column, row):
 	return node_generator.Node(CalculateNodePosition(column, row), column, row)
@@ -75,6 +74,8 @@ def ModifyNode(position, new_type):
 	y = int(position[1]/(rect_size[1]+margin))
 	if x >= columns or y >= rows:
 		return
+	if is_info_panel_drawn:
+		DrawNodes()
 	node = node_list[x][y]
 	if node in (start_node, end_node):
 		return
@@ -149,18 +150,13 @@ def OnVisited(node):
 	if node in (start_node, end_node):
 		return
 	node.ChangeColor(colors.NodeColors.visited.value)
-remaining_nodes_to_flip = 0
-def Flip(to_check_nodes):
-	global remaining_nodes_to_flip
-	if remaining_nodes_to_flip == 0:
-		pygame.display.flip()
-		remaining_nodes_to_flip = len(to_check_nodes)
-		call_time = time.time()
-		while True:		# This is the only way I found to sleep without setting pygame as "not responding"
-			if time.time() - call_time >= delay_time/ 100:
-				break
+	Flip()
+def Flip():
+	call_time = time.time()
+	while True:
+		if time.time() - call_time >= delay_time:
 			pygame.display.flip()
-	remaining_nodes_to_flip -= 1	
+			return
 def DrawNodes():
 	"""
 		Draws all the nodes
@@ -170,12 +166,17 @@ def DrawNodes():
 		for node in x:
 			node.position = CalculateNodePosition(node.column, node.row)
 			node.Draw()
+	global is_info_panel_drawn
+	is_info_panel_drawn = False
 def DrawInfoPanel():
 	i= 0
 	for line in info_text.split("\n"):
-		t = font.render(line.replace("\t", "    ").replace("\n", ""), True, colors.General.info_text.value)
-		screen.blit(t, (0, screen.get_height() - info_panel_size[1] + 20 *i))
+		text = font.render(line.replace("\t", "    ").replace("\n", ""), True, colors.General.info_text.value)
+		screen.blit(text, (0, screen.get_height() - info_panel_size[1] + 20*i))
 		i += 1 
+def DrawDelayTime():
+	text = font.render("delay: " + str(delay_time)[:4] + "s", True, colors.General.info_text.value, colors.General.text.value)
+	screen.blit(text, (0,0))
 def FindPath():
 	if not pathfinder.GetIsWeighted(algorithm):
 		Reset(False, True)
@@ -210,11 +211,13 @@ pygame.display.set_caption("Path finding Visualizer")
 screen = pygame.display.set_mode(default_screen_size, pygame.RESIZABLE)
 node_generator = node.NodeGenerator(screen, rect_size, weight_image_path)
 font = pygame.font.SysFont("arial", 20)
-FillEmptyScreen()
-DrawNodes()
 pathfinder.on_checking_event.append(OnCheking)
 pathfinder.on_finished_event.append(OnVisited)
-pathfinder.on_surrounding_check_event.append(Flip)
+
+FillEmptyScreen()
+DrawNodes()
+DrawInfoPanel()
+is_info_panel_drawn = True
 
 #Set default start and end nodes
 SetStart(node_list[default_start_grid_pos[0]][default_start_grid_pos[1]])
@@ -233,6 +236,7 @@ while True:
 			screen = pygame.display.set_mode(event.size, pygame.RESIZABLE)
 			FillEmptyScreen()
 			DrawNodes()
+			DrawInfoPanel()
 		elif event.type == pygame.MOUSEBUTTONDOWN:
 			if event.button == 5:
 				ZoomOut()
@@ -262,11 +266,16 @@ while True:
 			elif event.key == pygame.K_r:
 				Reset(True, True)
 			elif event.key == pygame.K_PERIOD:
-				if delay_time < 100:
-					delay_time+= 1
+				if delay_time < maximum_delay:
+					delay_time += 0.01
+					print(delay_time)
 			elif event.key == pygame.K_COMMA:
-				if delay_time >= 0:
-					delay_time-=1
+				if delay_time > minimum_delay:
+					delay_time -= 0.01
+					print(delay_time)
+			elif event.key == pygame.K_F1:
+				DrawInfoPanel()
+				is_info_panel_drawn = True
 			elif event.key == pygame.K_1:
 				algorithm = pathfinder.Dijkstra
 			elif event.key == pygame.K_2:
@@ -282,5 +291,5 @@ while True:
 			elif mouse_down:
 				ModifyNode(pygame.mouse.get_pos(), draw_mode)
 	node_generator.UpdateRectSize(rect_size)
-	DrawInfoPanel()
+	DrawDelayTime()
 	pygame.display.flip()

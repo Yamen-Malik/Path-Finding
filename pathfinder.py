@@ -3,7 +3,6 @@ found_path = False
 diagonal = False
 on_checking_event = []
 on_finished_event = []
-on_surrounding_check_event = []
 def Dijkstra(node_list, start_node, end_node):
 	start_node.distance_from_start = 0
 	current_node = start_node   # this list keeps track of the nodes we should check in order (lower distance from start to the higher)
@@ -24,7 +23,6 @@ def Dijkstra(node_list, start_node, end_node):
 					to_check.append(surrounding_node)
 				CallEvent(on_checking_event, surrounding_node)
 		CallEvent(on_finished_event, current_node)
-		CallEvent(on_surrounding_check_event, to_check)
 		if to_check == []:
 			return
 		current_node = to_check.pop(0)
@@ -56,7 +54,6 @@ def AStar(node_list, start_node, end_node):
 					CallEvent(on_checking_event, surrounding_node)
 					
 		CallEvent(on_finished_event, current_node)
-		CallEvent(on_surrounding_check_event, to_check)
 		finished_nodes.add(current_node)
 		if to_check == []:
 			return
@@ -81,7 +78,6 @@ def GreedyBFS(node_list, start_node, end_node):
 				if surrounding_node not in to_check:
 					to_check.append(surrounding_node)
 		CallEvent(on_finished_event, current_node)
-		CallEvent(on_surrounding_check_event, to_check)
 		if to_check == []:
 			return
 		current_node = to_check.pop(0)
@@ -105,7 +101,7 @@ def GetSurroundingNodes(node_list, node):
 	"""
 		Returns all surrounding nodes without going out of node_list range
 	"""
-	surroundings = [(node.column+1, node.row), (node.column-1, node.row),(node.column, node.row+1), (node.column, node.row-1)]
+	surroundings = [(node.column, node.row-1), (node.column+1, node.row),(node.column, node.row+1), (node.column-1, node.row)]
 	if diagonal:
 		surroundings += [(node.column+1, node.row+1), (node.column+1, node.row-1), (node.column-1, node.row-1), (node.column-1, node.row+1)]
 	

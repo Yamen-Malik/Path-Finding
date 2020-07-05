@@ -1,4 +1,5 @@
 import pygame, colors
+from enum import Enum
 pygame.init()
 font = pygame.font.SysFont("arial", 10)
 font_size = 10
@@ -99,3 +100,10 @@ class NodeGenerator():
 			self.is_weight = False
 			self.cost = 1
 			self.ChangeColor(colors.NodeColors.normal.value)
+
+class NodeTypes(Enum):
+	Normal = 0
+	Start = 1
+	End = 2
+	Obstacle = 3
+	Weight = 4

@@ -2,12 +2,10 @@ Path Finding Visualizer Project
 ====================
 About the project
 -----------------
-This project is all about implementing the popular path finding algorithms
+In this project I challenged myself to learn and implement the most popular path-finding algorithms without looking at any online implementation,  
+I have just looked at the theory of the path finding algorithms.
 
-In this project I wanted to write the code by my own so I have not looked at any online implementation  
-I have just looked at the theory of the path finding algorithms
-
-**Note**: My code isn't the most efficient, if you want to use a proper path finding algorithm look it up online
+**Note**: My code isn't the most efficient, if you want to use a proper path finding algorithm look it up online, also python is the best language for these things
 
 Requirements
 ------------

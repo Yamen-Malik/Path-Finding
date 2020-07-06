@@ -18,37 +18,41 @@ minimum_delay = 0.001
 maximum_delay = 0.5
 
 #Other
-algorithm = pathfinder.Dijkstra	#The algorithm that we are going to user
+algorithm = pathfinder.Dijkstra	#The algorithm that we are going to use (Default : Dijkstra)
 start_node, end_node = None, None
 delay_time = minimum_delay			# The time you want to delay between each node update *In Seconds (in other words: speed)
 info_text = ""
+#This will load the info text from a .txt file
 try:
-	f = open(os.path.abspath("info text.txt"), "r")
+	f = open(os.path.abspath("info.txt"), "r")
 	info_text = f.read()
 except:
-	print("\"info text.txt\" is unreachable")
+	print("\"info.txt\" is unreachable")
 
 
 def CreateNode(column, row):
+	"""
+		Returns a new grid node with the given column and row
+	"""
 	return node_generator.Node(CalculateNodePosition(column, row), column, row)
 def CalculateNodePosition(column, row):
 	"""
-		Calculates the node position in pixels using it's column, row and size
+		Calculates the node position in pixels using it's column, row and the global/public size variable
 	"""
 	return column*(rect_size[0] + margin), row*(rect_size[1] + margin)
 def CalculateRows():
 	"""
-		Calculates the amount of rows that can fit in the screen
+		Returns the amount of rows that can fit in the screen using the public node	size
 	"""
 	return round(screen.get_height() / (rect_size[1] + margin))
 def CalculateColumns():
 	"""
-		Calculates the amount of rows that can fit in the screen
+		Returns the amount of rows that can fit in the screen using the public node	size
 	"""
 	return round(screen.get_width() / (rect_size[0] + margin))
 def SetStart(node):
 	"""
-		Sets the start node the given node
+		Sets the given node as Start Node and resets the last start node to normal (if there is any)
 	"""
 	global start_node
 	if start_node != None:
@@ -58,7 +62,7 @@ def SetStart(node):
 	start_node = node
 def SetEnd(node):
 	"""
-		Sets the end node the given node
+		Sets the given node as End Node and resets the last end node to normal (if there is any)
 	"""
 	global end_node
 	if end_node != None:
@@ -68,7 +72,7 @@ def SetEnd(node):
 	end_node = node
 def ModifyNode(position, new_type):
 	"""
-		Takes a position on the screen and find the node in that position then updates the node to match the type value
+		Takes a position on the screen and find the node in that position then updates the node to match the given type
 	"""
 	x = int(position[0]/(rect_size[0]+margin))
 	y = int(position[1]/(rect_size[1]+margin))
@@ -115,7 +119,7 @@ def Reset(remove_obstacles = False, remove_weight = False):
 				node.Draw()
 def FillEmptyScreen():
 	"""
-		Fils the emty part of the screen with more nodes
+		Fils the empty part of the screen with more nodes and add them to the public node list
 	"""
 	global columns, rows, node_list
 	needed_columns = CalculateColumns() - columns
@@ -124,7 +128,6 @@ def FillEmptyScreen():
 		needed_columns = 0
 	if needed_rows < 0:
 		needed_rows = 0
-	# AddNewNodes(needed_columns, needed_rows)
 	for x in range(needed_columns):
 		node_list.append([CreateNode(columns + x, y) for y in range(rows)])
 	columns += needed_columns
@@ -132,34 +135,31 @@ def FillEmptyScreen():
 		for y in range(needed_rows):
 			column.append(CreateNode(node_list.index(column), rows + y))
 	rows += needed_rows
-#? Sould I use this func?
-# def AddNewNodes(new_columns, new_rows):
-	# global columns, rows
-	# for x in range(new_columns):
-	# 	node_list.append([CreateNode(columns + x, y) for y in range(rows)])
-	# columns += new_columns
-	# for column in node_list:
-	# 	for y in range(new_rows):
-	# 		column.append(CreateNode(node_list.index(column), rows + y))
-	# rows += new_rows
+
+#This function triggers when the algorithm is checking on certain nodes values
 def OnCheking(node):
+	"""
+		Changes the given node color to the "cheking color" unless it is the start or end node
+	"""
 	if node in (start_node, end_node):
 		return
 	node.ChangeColor(colors.NodeColors.cheking.value)
+
+#This function triggers when the algorithm is visiting certain node to check on its neighbor
 def OnVisited(node):
 	if node in (start_node, end_node):
 		return
 	node.ChangeColor(colors.NodeColors.visited.value)
-	Flip()
-def Flip():
+
+	#We don't want to flip too fast because the visualization will be slow
 	call_time = time.time()
-	while True:
+	while True:			#I didn't use time.sleep here beause it will set pygame as not responding
 		if time.time() - call_time >= delay_time:
 			pygame.display.flip()
 			return
 def DrawNodes():
 	"""
-		Draws all the nodes
+		Draws all the nodes (that in the public node list) on the main screen
 	"""
 	screen.fill(background_color)
 	for x in node_list:
@@ -169,15 +169,26 @@ def DrawNodes():
 	global is_info_panel_drawn
 	is_info_panel_drawn = False
 def DrawInfoPanel():
+	"""
+		Draws the info panel on the left-down part of the screen using the public info_text and info_panel_size
+	"""
+	global is_info_panel_drawn
+	is_info_panel_drawn = True
 	i= 0
 	for line in info_text.split("\n"):
 		text = font.render(line.replace("\t", "    ").replace("\n", ""), True, colors.General.info_text.value)
 		screen.blit(text, (0, screen.get_height() - info_panel_size[1] + 20*i))
 		i += 1 
 def DrawDelayTime():
+	"""
+		Draws the delay time text on the left-up part of the screen using the public font
+	"""
 	text = font.render("delay: " + str(delay_time)[:4] + "s", True, colors.General.info_text.value, colors.General.text.value)
 	screen.blit(text, (0,0))
 def FindPath():
+	"""
+		Start the algorithm then draw the path
+	"""
 	if not pathfinder.GetIsWeighted(algorithm):
 		Reset(False, True)
 	else:
@@ -217,7 +228,6 @@ pathfinder.on_finished_event.append(OnVisited)
 FillEmptyScreen()
 DrawNodes()
 DrawInfoPanel()
-is_info_panel_drawn = True
 
 #Set default start and end nodes
 SetStart(node_list[default_start_grid_pos[0]][default_start_grid_pos[1]])
@@ -275,7 +285,6 @@ while True:
 					print(delay_time)
 			elif event.key == pygame.K_F1:
 				DrawInfoPanel()
-				is_info_panel_drawn = True
 			elif event.key == pygame.K_1:
 				algorithm = pathfinder.Dijkstra
 			elif event.key == pygame.K_2:

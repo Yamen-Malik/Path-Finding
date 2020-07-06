@@ -7,12 +7,15 @@ class NodeGenerator():
 	rect_size = None
 	weight_image = None
 	screen = None
-	def __init__(self, screen_, rect_size_, weight_image_):
+	def __init__(self, screen_, rect_size_, weight_image_path):
 		global screen, rect_size, weight_image
 		screen = screen_
 		rect_size = rect_size_
-		# font = font_
-		weight_image = weight_image_
+		try:
+			weight_image = pygame.image.load(weight_image_path)
+		except:
+			print(f"{weight_image_path} is not reachable")
+			weight_image = None
 	def UpdateRectSize(self, new_size):
 		global rect_size, font, font_size
 		rect_size = new_size
@@ -43,29 +46,19 @@ class NodeGenerator():
 			if self.position[0] > screen.get_width() or self.position[1] > screen.get_height():
 				return
 			pygame.draw.rect(screen, color, pygame.Rect(self.position[0], self.position[1], rect_size[0], rect_size[1]))
-			if self.is_weight:
-				image = pygame.image.load(weight_image)
+			if self.is_weight and weight_image != None:
+				image = weight_image
 				image = pygame.transform.scale(image, (int(image.get_width() * (rect_size[0]/100)), int(image.get_height() *(rect_size[1]/100))))
 				screen.blit(image, (self.position[0] + (rect_size[0] - image.get_width())/2, (self.position[1] + (rect_size[1] - image.get_height())/2)))
 			
 			if rect_size[0] >= 25:
 				if self.distance_from_start not in (0, float("inf")):
-					# screen.blit(font1.render(str(self.distance_from_start), True, colors.General.text.value), (self.position[0], self.position[1]+(rect_size[1]) - 10))
 					screen.blit(font.render(str(self.distance_from_start), True, colors.General.text.value), (self.position[0], self.position[1]+(rect_size[1]) - font_size))
 				if self.distance_from_end not in (0, float("inf")):
-					# screen.blit(font1.render(str(self.distance_from_end), True, colors.General.text.value), (self.position[0] + rect_size[0] - 10, self.position[1]+ rect_size[1]) - 10)
 					screen.blit(font.render(str(self.distance_from_end), True, colors.General.text.value), (self.position[0] + rect_size[0] - font.size(str(self.distance_from_end))[0], self.position[1]))
-					# screen.blit(font1.render(str(self.distance_from_end), True, colors.General.text.value), (self.position[0] + rect_size[0] - font1.size(self.distance_from_end), self.position[1] - font_size))
 				if self.total_distance not in (0, float("inf")):
-					# screen.blit(font.render(str(self.total_distance), True, colors.General.text.value), (self.position[0]+(rect_size[0]/3), self.position[1]+(rect_size[1]/3)))
 					screen.blit(font.render(str(self.total_distance), True, colors.General.text.value), (self.position[0], self.position[1]))
 
-			# if self.distance_from_start not in (0, float("inf")) and rect_size[0] >= 25:
-			# 	if self.total_distance == float("inf"):
-			# 		screen.blit(font.render(str(self.distance_from_start), True, colors.General.text.value), (self.position[0]+(rect_size[0]/3), self.position[1]+(rect_size[1]/3)))
-			# 	else:
-			# 		screen.blit(pygame.font.SysFont("arial", 9).render(str(self.distance_from_start), True, colors.General.text.value), (self.position[0], self.position[1]+(rect_size[1]) - 10))
-			# 		screen.blit(font.render(str(self.total_distance), True, colors.General.text.value), (self.position[0]+(rect_size[0]/3), self.position[1]+(rect_size[1]/3)))
 
 		def ChangeColor(self, new_color):
 			"""

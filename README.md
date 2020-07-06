@@ -9,7 +9,7 @@ I have just looked at the theory of the path finding algorithms.
 
 Requirements
 ------------
-All you need to run this code on you're device is:
+All you need to run this code on your device is:
 1. python
 2. pygame library (for the graphics)
 

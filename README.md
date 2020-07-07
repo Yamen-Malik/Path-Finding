@@ -15,7 +15,7 @@ All you need to run this code on your device is:
 
 About The App
 -------------
-After you run the code a pygme window will pop up, which will have a basic grid (I drew squares in a for loop)  
+After you run the main script (main.py) a pygme window will pop up, which will have a basic grid (I drew squares in a for loop)  
 you will also find start(blue) and end(red) nodes. In addition to an info panel in the left-down side of the window
 
 ### Nodes  

@@ -89,7 +89,7 @@ def ModifyNode(position, new_type):
 		SetEnd(node)
 	elif new_type == NodeTypes.Obstacle:
 		node.SetToObstacle()
-	elif new_type == NodeTypes.Weight:
+	elif new_type == NodeTypes.Weight and not node.is_obstacle:
 		node.SetToWeighted(weighted_node_cost)
 	elif new_type == NodeTypes.Normal:
 		node.Reset()

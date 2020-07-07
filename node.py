@@ -70,6 +70,8 @@ class NodeGenerator():
 			"""
 				Set the values that will make this node a weight node
 			"""
+			if self.is_weight:
+				return
 			self.is_weight = True
 			self.cost = cost
 			self.Draw()
@@ -77,6 +79,8 @@ class NodeGenerator():
 			"""
 				Set the values that will make this node a obstacle node
 			"""
+			if self.is_obstacle:
+				return
 			self.Reset()
 			self.is_obstacle = True
 			self.ChangeColor(colors.NodeColors.obstacle.value)

@@ -1,4 +1,4 @@
-import pygame, sys, time, node, pathfinder, colors, os
+import pygame, sys, time, node, pathfinder, colors, os, time
 from node import NodeTypes
 
 #Grid

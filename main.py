@@ -185,6 +185,12 @@ def DrawDelayTime():
 	"""
 	text = font.render("delay: " + str(delay_time)[:4] + "s", True, colors.General.info_text.value, colors.General.text.value)
 	screen.blit(text, (0,0))
+def DrawDuringTime():
+	"""
+		Draws the during time text on the left-up part of the screen using the public font
+	"""
+	text = font.render("During Time: " + str(totalseconds)[:4] + "s", True, colors.General.info_text.value, colors.General.text.value)
+	screen.blit(text, (10,0))
 def FindPath():
 	"""
 		Start the algorithm then draw the path
@@ -292,7 +298,10 @@ while True:
 			elif event.key == pygame.K_3:
 				algorithm = pathfinder.GreedyBFS
 			elif event.key == pygame.K_RETURN:
+				currentTime = time.time()
 				FindPath()
+				totalseconds=time.time()-currentTime
+				DrawTime()
 		#Modify nodes
 		elif event.type == pygame.MOUSEMOTION:
 			if remove_mode:

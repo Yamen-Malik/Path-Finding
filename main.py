@@ -1,4 +1,4 @@
-import pygame, sys, time, node, pathfinder, colors, os
+import pygame, sys, time, node, pathfinder, colors, os, time
 from node import NodeTypes
 
 #Grid
@@ -185,6 +185,9 @@ def DrawDelayTime():
 	"""
 	text = font.render("delay: " + str(delay_time)[:4] + "s", True, colors.General.info_text.value, colors.General.text.value)
 	screen.blit(text, (0,0))
+def DrawDuringTime(totalseconds):
+	text = font.render("DuringTime: " + str(totalseconds)[:4] + "s", True, colors.General.info_text.value, colors.General.text.value)
+	screen.blit(text, (0,23))
 def FindPath():
 	"""
 		Start the algorithm then draw the path
@@ -292,7 +295,10 @@ while True:
 			elif event.key == pygame.K_3:
 				algorithm = pathfinder.GreedyBFS
 			elif event.key == pygame.K_RETURN:
+				currentTime=time.time()
 				FindPath()
+				totalseconds=time.time()-currentTime
+				DrawDuringTime(totalseconds)
 		#Modify nodes
 		elif event.type == pygame.MOUSEMOTION:
 			if remove_mode:
